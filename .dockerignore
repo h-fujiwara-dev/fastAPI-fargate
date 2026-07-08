@@ -1,0 +1,11 @@
+.git
+.terraform
+*.tfstate
+*.tfstate.*
+__pycache__
+*.pyc
+.venv
+.env
+bootstrap
+envs
+modules

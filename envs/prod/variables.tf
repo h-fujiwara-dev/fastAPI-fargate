@@ -47,7 +47,7 @@ variable "container_image" {
 
 variable "container_port" {
   type    = number
-  default = 80
+  default = 8000
 }
 
 variable "ecs_cpu" {

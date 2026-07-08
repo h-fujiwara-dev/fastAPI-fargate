@@ -15,6 +15,8 @@ Backing services: CloudWatch monitoring, GitHub Actions (OIDC) -> ECR -> ECS dep
 - `envs/prod/` — the main stack (VPC, WAF, ALB, ECS, RDS, CloudWatch, GitHub OIDC role). Uses the S3 backend created by `bootstrap/`.
 - `modules/*` — reusable modules called from `envs/prod`.
 - `.github/workflows/deploy.yml` — builds the app image, pushes to ECR, and forces a new ECS deployment via GitHub Actions OIDC (no long-lived AWS keys).
+- `app/` — the FastAPI application (async SQLAlchemy + a sample `items` CRUD resource backed by RDS PostgreSQL).
+- `alembic/` — database migrations (async Alembic, targets the same RDS instance as the app).
 
 ## First-time setup
 
@@ -28,6 +30,21 @@ Backing services: CloudWatch monitoring, GitHub Actions (OIDC) -> ECR -> ECS dep
 8. Add `terraform output -raw github_actions_role_arn` as the `AWS_ROLE_ARN` repository variable in GitHub (Settings > Secrets and variables > Actions > Variables).
 9. Set `container_image = "<terraform output -raw ecr_repository_url>:latest"` in `envs/prod/terraform.tfvars` and re-apply, so the ECS task definition points at your own ECR repo instead of the placeholder image. The deploy workflow only pushes to the `:latest`/`:sha-<sha>` tags and calls `force-new-deployment` — it does not register a new task definition, so the task definition's image reference must already be the mutable `:latest` tag for new pushes to actually take effect.
 10. Push your FastAPI app's Dockerfile to `main` — GitHub Actions will build, push to ECR, and roll the ECS service.
+
+## Database migrations
+
+RDS lives in the deepest private subnet with no route to the internet, so `alembic upgrade head` can't be run from a laptop — it has to run from inside the VPC. The simplest way is a one-off ECS task that reuses the app's own task definition (same image, same network access to RDS) but overrides the container command:
+
+```
+aws ecs run-task \
+  --cluster fastapi-fargate-cluster \
+  --task-definition fastapi-fargate-task \
+  --launch-type FARGATE \
+  --network-configuration '{"awsvpcConfiguration":{"subnets":["<private-app-subnet-id>"],"securityGroups":["<ecs-sg-id>"],"assignPublicIp":"DISABLED"}}' \
+  --overrides '{"containerOverrides":[{"name":"app","command":["alembic","upgrade","head"]}]}'
+```
+
+Get the subnet/security group IDs from `terraform output` or the AWS console. Run this once after the first real app image is deployed, and again after any migration is added.
 
 ## Notes
 
