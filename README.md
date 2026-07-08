@@ -2,12 +2,17 @@
 
 Terraform で構築する AWS インフラ一式。
 
-```
-User -> (Route 53: future) -> AWS WAF -> ALB (public subnet)
-     -> ECS Fargate / FastAPI (private app subnet)
-     -> RDS PostgreSQL (private db subnet)
-Backing services: CloudWatch monitoring, GitHub Actions (OIDC) -> ECR -> ECS deploy
-```
+## Architecture
+
+![AWS architecture: a client request passes through WAF and an ALB into an ECS Fargate service running FastAPI, across public / private-app / private-db subnet tiers in 2 AZs, down to a single-AZ RDS PostgreSQL instance with no internet route; a separate GitHub Actions pipeline builds and pushes images to ECR and redeploys the ECS service via OIDC; CloudWatch/SNS monitor the stack.](docs/architecture.svg)
+
+- **Request flow**: Client → WAF → ALB (public subnets) → ECS Fargate (private app subnets) → RDS PostgreSQL (private db subnets, no internet route).
+- **Security group chain**: `alb-sg → ecs-sg → db-sg` — each tier's security group only trusts the previous tier's security group as its source.
+- **Credentials**: the ECS task execution role reads the RDS-managed master password from Secrets Manager; the app never sees a plaintext password in Terraform state.
+- **Egress-only path**: ECS tasks have no direct internet route — outbound traffic (e.g. pulling public resources, calling AWS APIs) goes through the single NAT Gateway and the Internet Gateway.
+- **CI/CD**: GitHub Actions assumes an IAM role via OIDC (no long-lived AWS keys), builds and pushes the app image to ECR, then redeploys the ECS service. See setup step 9 below for an important caveat about how this deploy step works.
+- **Monitoring**: ECS/ALB/RDS metrics feed CloudWatch alarms, which publish to an SNS topic with an email subscription.
+- **HTTPS is not active yet** — `modules/dns_cert` (Route 53 + ACM) exists in code but isn't wired up because no domain is configured; see `Notes` below.
 
 ## Directory layout
 
@@ -17,6 +22,7 @@ Backing services: CloudWatch monitoring, GitHub Actions (OIDC) -> ECR -> ECS dep
 - `.github/workflows/deploy.yml` — builds the app image, pushes to ECR, and forces a new ECS deployment via GitHub Actions OIDC (no long-lived AWS keys).
 - `app/` — the FastAPI application (async SQLAlchemy + a sample `items` CRUD resource backed by RDS PostgreSQL).
 - `alembic/` — database migrations (async Alembic, targets the same RDS instance as the app).
+- `docs/` — architecture diagram (draw.io source `architecture.drawio` + exported `architecture.svg`, see Architecture above).
 
 ## First-time setup
 
@@ -52,3 +58,4 @@ Get the subnet/security group IDs from `terraform output` or the AWS console. Ru
 - The database is a single-AZ `db.t4g.micro` RDS for PostgreSQL instance, chosen for cost over availability. Flip `db_multi_az = true` later if needed.
 - A single NAT Gateway is used (cost over multi-AZ resilience for outbound traffic).
 - The ECS task definition starts out pointing at a placeholder public image (`container_image` variable) until the real app image is pushed to ECR.
+- When the Terraform architecture changes, update `docs/architecture.drawio` and re-export `docs/architecture.svg` before merging, so the diagram doesn't drift from reality.
