@@ -43,7 +43,10 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "app" {
-  name        = "${var.name_prefix}-tg"
+  # name_prefix (rather than a fixed name) lets create_before_destroy spin up
+  # a replacement target group before the old one — whose port can't be
+  # changed in place — is torn down, avoiding an ALB outage on port changes.
+  name_prefix = "fatg-"
   port        = var.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -56,6 +59,10 @@ resource "aws_lb_target_group" "app" {
     interval            = 30
     timeout             = 5
     matcher             = "200-399"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 
   tags = merge(var.tags, { Name = "${var.name_prefix}-tg" })
