@@ -9,6 +9,7 @@ Terraform で構築する AWS インフラ一式。
 - **Request flow**: Client → WAF → ALB (public subnets) → ECS Fargate (private app subnets) → RDS PostgreSQL (private db subnets, no internet route).
 - **Security group chain**: `alb-sg → ecs-sg → db-sg` — each tier's security group only trusts the previous tier's security group as its source.
 - **Credentials**: the ECS task execution role reads the RDS-managed master password from Secrets Manager; the app never sees a plaintext password in Terraform state.
+- **API auth**: `/items` requires an `X-API-Key` header. Terraform generates a random key into Secrets Manager and injects it into the task as `APP_API_KEY`; retrieve it with `aws secretsmanager get-secret-value --secret-id $(terraform output -raw api_key_secret_arn) --query SecretString --output text`. `/` (the ALB health check) stays open.
 - **Egress-only path**: ECS tasks have no direct internet route — outbound traffic (e.g. pulling public resources, calling AWS APIs) goes through the single NAT Gateway and the Internet Gateway.
 - **CI/CD**: GitHub Actions assumes an IAM role via OIDC (no long-lived AWS keys), builds and pushes the app image to ECR, then redeploys the ECS service. See setup step 9 below for an important caveat about how this deploy step works.
 - **Monitoring**: ECS/ALB/RDS metrics feed CloudWatch alarms, which publish to an SNS topic with an email subscription.

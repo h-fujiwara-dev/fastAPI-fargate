@@ -79,6 +79,11 @@ variable "db_secret_arn" {
   type = string
 }
 
+variable "api_key_secret_arn" {
+  description = "ARN of the Secrets Manager secret holding the app's API key (see envs/prod/main.tf)."
+  type        = string
+}
+
 variable "tags" {
   type    = map(string)
   default = {}

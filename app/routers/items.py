@@ -5,8 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models import Item
 from app.schemas import ItemCreate, ItemRead, ItemUpdate
+from app.security import require_api_key
 
-router = APIRouter(prefix="/items", tags=["items"])
+router = APIRouter(prefix="/items", tags=["items"], dependencies=[Depends(require_api_key)])
 
 
 @router.post("", response_model=ItemRead, status_code=201)

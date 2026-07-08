@@ -88,7 +88,7 @@ resource "aws_iam_role_policy" "task_execution_secrets" {
     Statement = [{
       Effect   = "Allow"
       Action   = ["secretsmanager:GetSecretValue"]
-      Resource = var.db_secret_arn
+      Resource = [var.db_secret_arn, var.api_key_secret_arn]
     }]
   })
 }
@@ -133,6 +133,7 @@ resource "aws_ecs_task_definition" "app" {
       secrets = [
         { name = "DB_USERNAME", valueFrom = "${var.db_secret_arn}:username::" },
         { name = "DB_PASSWORD", valueFrom = "${var.db_secret_arn}:password::" },
+        { name = "APP_API_KEY", valueFrom = var.api_key_secret_arn },
       ]
 
       logConfiguration = {

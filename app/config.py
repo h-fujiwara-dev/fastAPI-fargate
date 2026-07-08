@@ -17,4 +17,12 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.username}:{self.password}@{self.host}:{self.port}/{self.name}"
 
 
+class SecuritySettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="APP_")
+
+    # Injected from Secrets Manager as APP_API_KEY (see modules/ecs/main.tf).
+    api_key: str = ""
+
+
 settings = Settings()
+security_settings = SecuritySettings()

@@ -30,3 +30,8 @@ output "github_actions_role_arn" {
 output "waf_web_acl_arn" {
   value = module.waf.web_acl_arn
 }
+
+output "api_key_secret_arn" {
+  description = "Fetch the value with: aws secretsmanager get-secret-value --secret-id <this arn> --query SecretString --output text"
+  value       = aws_secretsmanager_secret.api_key.arn
+}

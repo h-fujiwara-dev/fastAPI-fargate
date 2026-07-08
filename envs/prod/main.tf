@@ -42,6 +42,21 @@ module "dns_cert" {
   tags               = local.common_tags
 }
 
+resource "random_password" "api_key" {
+  length  = 40
+  special = false
+}
+
+resource "aws_secretsmanager_secret" "api_key" {
+  name = "${var.name_prefix}-api-key"
+  tags = local.common_tags
+}
+
+resource "aws_secretsmanager_secret_version" "api_key" {
+  secret_id     = aws_secretsmanager_secret.api_key.id
+  secret_string = random_password.api_key.result
+}
+
 module "ecr" {
   source = "../../modules/ecr"
 
@@ -87,6 +102,7 @@ module "ecs" {
   db_port                = module.rds.db_port
   db_name                = module.rds.db_name
   db_secret_arn          = module.rds.secret_arn
+  api_key_secret_arn     = aws_secretsmanager_secret.api_key.arn
   tags                   = local.common_tags
 }
 
