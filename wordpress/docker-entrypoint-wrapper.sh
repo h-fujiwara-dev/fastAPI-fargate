@@ -5,9 +5,13 @@ set -euo pipefail
 # always overwrites whatever an older deploy left on the persistent EFS
 # volume. Everything else under wp-content (uploads, any other plugin/theme)
 # is left alone.
+#
+# Plain `cp -r` (not `-a`/`-p`): the EFS access point enforces uid/gid 33
+# (www-data) on every write through this mount, so attempting to preserve
+# the image's root:root ownership (or chown afterward) fails with EPERM.
+# New files land as 33:33 automatically — no explicit chown needed.
 plugin_dest="/var/www/html/wp-content/plugins/fastapi-items-viewer"
 mkdir -p "$plugin_dest"
-cp -a /usr/src/fastapi-items-viewer/fastapi-items-viewer/. "$plugin_dest/"
-chown -R www-data:www-data "$plugin_dest"
+cp -r /usr/src/fastapi-items-viewer/fastapi-items-viewer/. "$plugin_dest/"
 
 exec docker-entrypoint.sh "$@"
