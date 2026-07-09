@@ -35,3 +35,20 @@ output "api_key_secret_arn" {
   description = "Fetch the value with: aws secretsmanager get-secret-value --secret-id <this arn> --query SecretString --output text"
   value       = aws_secretsmanager_secret.api_key.arn
 }
+
+output "wp_alb_dns_name" {
+  value = module.alb_wordpress.alb_dns_name
+}
+
+output "wp_ecr_repository_url" {
+  value = module.ecr_wordpress.repository_url
+}
+
+output "wp_db_secret_arn" {
+  value     = module.rds_mysql.secret_arn
+  sensitive = true
+}
+
+output "wp_github_actions_role_arn" {
+  value = module.github_oidc_wordpress.github_actions_role_arn
+}

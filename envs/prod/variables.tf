@@ -117,6 +117,84 @@ variable "db_skip_final_snapshot" {
   default = true
 }
 
+# ---- WordPress ----
+
+variable "wp_container_image" {
+  description = "Starts pointing at the stock public WordPress image; switch to the ECR image built from wordpress/Dockerfile once it's pushed."
+  type        = string
+  default     = "wordpress:6.9.4-php8.3-apache"
+}
+
+variable "wp_container_port" {
+  type    = number
+  default = 80
+}
+
+variable "wp_ecs_cpu" {
+  type    = number
+  default = 512
+}
+
+variable "wp_ecs_memory" {
+  type    = number
+  default = 1024
+}
+
+variable "wp_ecs_desired_count" {
+  type    = number
+  default = 1
+}
+
+variable "wp_ecs_min_capacity" {
+  type    = number
+  default = 1
+}
+
+variable "wp_ecs_max_capacity" {
+  type    = number
+  default = 2
+}
+
+variable "wp_db_engine_version" {
+  type    = string
+  default = "8.4.10"
+}
+
+variable "wp_db_instance_class" {
+  type    = string
+  default = "db.t4g.micro"
+}
+
+variable "wp_db_allocated_storage" {
+  type    = number
+  default = 20
+}
+
+variable "wp_db_name" {
+  type    = string
+  default = "wordpress"
+}
+
+variable "wp_db_master_username" {
+  type    = string
+  default = "wp_admin"
+}
+
+variable "wp_db_multi_az" {
+  type    = bool
+  default = false
+}
+
+variable "wp_db_deletion_protection" {
+  type    = bool
+  default = false
+}
+
+variable "wp_db_skip_final_snapshot" {
+  type    = bool
+  default = true
+}
+
 # ---- CI/CD ----
 
 variable "github_org" {

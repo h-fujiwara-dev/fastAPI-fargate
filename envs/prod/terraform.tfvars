@@ -14,3 +14,8 @@ github_repo = "fastAPI-fargate"
 
 # Optional: set to receive CloudWatch alarm emails.
 alert_email = "omeomeinuomeinu@gmail.com"
+
+# WordPress: starts on the stock public image (see variables.tf default).
+# Switch to "<wp_ecr_repository_url>:latest" once wordpress/Dockerfile has
+# been built and pushed by GitHub Actions to the fastapi-fargate-wordpress
+# ECR repo, then re-apply.
