@@ -33,7 +33,7 @@ A read-only WordPress plugin (list/detail view of Items) runs as a second ECS Fa
 - `.github/workflows/deploy.yml` — builds the app image, pushes to ECR, and forces a new ECS deployment via GitHub Actions OIDC (no long-lived AWS keys).
 - `app/` — the FastAPI application (async SQLAlchemy + a sample `items` CRUD resource backed by RDS PostgreSQL).
 - `alembic/` — database migrations (async Alembic, targets the same RDS instance as the app).
-- `wordpress/` — the WordPress frontend: `Dockerfile` + `docker-entrypoint-wrapper.sh` (bakes and force-refreshes the plugin on every container start) + `wp-content/plugins/fastapi-items-viewer/` (the read-only Items list/detail plugin).
+- `wordpress/` — the WordPress frontend: `Dockerfile` + `docker-entrypoint-wrapper.sh` (bakes and force-refreshes the plugin and theme on every container start) + `wp-content/plugins/fastapi-items-viewer/` (the read-only Items list/detail plugin) + `wp-content/themes/eye-spy/` (the site theme: a blue/cream look with a large mouse-tracking eye card as the front page hero).
 - `.github/workflows/deploy-wordpress.yml` — builds the WordPress image, pushes to its own ECR repo, and forces a new deployment of the WordPress ECS service (separate OIDC role from the FastAPI pipeline).
 - `docs/` — architecture diagram (draw.io source `architecture.drawio` + exported `architecture.svg`, see Architecture above).
 
@@ -56,9 +56,10 @@ The same `terraform apply` above also stands up the WordPress ALB/ECS service/RD
 
 11. `curl http://$(terraform output -raw wp_alb_dns_name)/` to confirm the stock WordPress container responds (redirects to the install wizard).
 12. Add `terraform output -raw wp_github_actions_role_arn` as the `WORDPRESS_AWS_ROLE_ARN` repository variable in GitHub — a separate variable from `AWS_ROLE_ARN`, since WordPress uses its own, narrowly-scoped OIDC role.
-13. Set `wp_container_image = "<terraform output -raw wp_ecr_repository_url>:latest"` in `envs/prod/terraform.tfvars` and re-apply, so the task definition points at your own image (with the `fastapi-items-viewer` plugin baked in) instead of the stock public one. Same `:latest`/`force-new-deployment` caveat as step 9 above.
+13. Set `wp_container_image = "<terraform output -raw wp_ecr_repository_url>:latest"` in `envs/prod/terraform.tfvars` and re-apply, so the task definition points at your own image (with the `fastapi-items-viewer` plugin and `eye-spy` theme baked in) instead of the stock public one. Same `:latest`/`force-new-deployment` caveat as step 9 above.
 14. Push a change under `wordpress/` to `main` — `deploy-wordpress.yml` will build, push to the `fastapi-fargate-wordpress` ECR repo, and roll the WordPress ECS service.
 15. In wp-admin, add the `[fastapi_items]` shortcode to a page to render the Items list/detail view. If `FASTAPI_API_BASE_URL`/`FASTAPI_API_KEY` aren't set as task env vars, configure them instead under Settings > FastAPI Items.
+16. In wp-admin, activate the **Eye Spy** theme under Appearance > Themes. This is one-time: unlike the plugin/theme *files* (force-refreshed from the image on every deploy), the active-theme choice lives in the database and persists across future deploys.
 
 ## Database migrations
 
