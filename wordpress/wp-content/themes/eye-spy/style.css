@@ -141,3 +141,12 @@ h3 {
     color: var(--color-ink);
     opacity: 0.8;
 }
+
+/* FastAPI items list, shown at the bottom of the front page. */
+.fastapi-items {
+    margin-top: 2rem;
+}
+
+.fastapi-items h2 {
+    margin-top: 0;
+}

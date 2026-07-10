@@ -23,4 +23,6 @@ get_header();
     <?php endwhile; ?>
 <?php endif; ?>
 
+<?php get_template_part('template-parts/fastapi-items'); ?>
+
 <?php get_footer(); ?>
