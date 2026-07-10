@@ -1,0 +1,143 @@
+/*
+Theme Name: Eye Spy
+Theme URI: https://github.com/
+Author: fastAPI-fargate
+Description: A blue-and-cream themed site with a large mouse-tracking eye card as the front page hero.
+Version: 1.0.0
+Requires PHP: 8.0
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: eye-spy
+*/
+
+:root {
+    --color-primary: #0062ad;
+    --color-cream: #fbf0dc;
+    --color-ink: #111111;
+    --font-heading: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: var(--color-primary);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+a {
+    color: inherit;
+}
+
+.site-header,
+.site-footer {
+    padding: 1.5rem 2rem;
+    color: var(--color-cream);
+}
+
+.site-header__title {
+    margin: 0;
+}
+
+.site-header__title a {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+}
+
+.site-footer {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.site-main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1rem 2rem 4rem;
+}
+
+.card {
+    background: var(--color-cream);
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+/* Eye-tracking hero, shown on the front page via front-page.php */
+.eye-hero {
+    width: min(90%, 420px);
+    margin: 3rem auto 2rem;
+    background: var(--color-cream);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    font-family: var(--font-heading);
+}
+
+.eye-hero__stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(12px, 4vw, 24px);
+    background: var(--color-primary);
+    border-radius: 14px;
+    padding: clamp(24px, 8vw, 48px) 16px;
+}
+
+.eye {
+    position: relative;
+    width: clamp(72px, 20vw, 160px);
+    aspect-ratio: 1;
+    flex: 0 0 auto;
+    background: var(--color-cream);
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.eye__pupil {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 37%;
+    height: 37%;
+    margin: -18.5% 0 0 -18.5%;
+    background: #000;
+    border-radius: 50%;
+    will-change: transform;
+}
+
+.eye-hero__label {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.eye-hero__code {
+    display: block;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    color: var(--color-ink);
+}
+
+.eye-hero__name {
+    display: block;
+    margin-top: 4px;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--color-ink);
+    opacity: 0.8;
+}
